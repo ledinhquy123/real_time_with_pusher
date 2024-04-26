@@ -23,4 +23,6 @@ Route::prefix('chat')->name('chat.')->controller(ChatController::class)->group(f
     Route::get('/', 'showChat')->name('showChat');
 
     Route::post('/message', 'messageReceived')->name('message');
+
+    Route::post('/greet/{receiver}', 'greetReceive')->name('greet');
 });

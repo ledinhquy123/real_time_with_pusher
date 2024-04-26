@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Events\Chat;
+namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
@@ -9,24 +9,30 @@ use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Support\Facades\Log;
 
-class MessageSent implements ShouldBroadcast
+class GreetingSent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $user;
-
-    public function __construct($user)
+    public $message;
+    public function __construct($user, $message)
     {
         $this->user = $user;
+        $this->message = $message;
     }
-
+    
     public function broadcastOn(): array
     {
-        // if the user is not participating in the 'present channel' then the user will not receive the message
         return [
-            new PresenceChannel('chat'),
+            new PrivateChannel("chat.greet.{$this->user->id}"),
+        ];
+    }
+
+    public function broadcastWith(): array {
+        return [
+            'user' => $this->user,
+            'message' => $this->message
         ];
     }
 }

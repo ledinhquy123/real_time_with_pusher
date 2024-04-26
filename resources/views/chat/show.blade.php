@@ -1,5 +1,15 @@
 @extends('layouts.app')
 
+@push('style')
+    <style>
+        #users > li:hover {
+            cursor: pointer;
+            font-weight: bold;
+            transition: all;  
+        }
+    </style>
+@endpush
+
 @section('content')
 <div class="container-fluid">
     <div class="row justify-content-center">
@@ -54,6 +64,7 @@
                 users.forEach((user, index) => {
                     const element = document.createElement('li')
                     element.setAttribute('id', user.id)
+                    element.setAttribute('onClick', `greetUser("${user.id}")`) // Click to sent a message to this user
                     element.innerText = user.name
 
                     usersElement.appendChild(element)
@@ -63,6 +74,7 @@
                 console.log(user, 'joining');
                 const element = document.createElement('li')
                 element.setAttribute('id', user.id)
+                element.setAttribute('onClick', `greetUser("${user.id}")`) // Click to sent a message to this user
                 element.innerText = user.name
 
                 usersElement.appendChild(element)
@@ -72,11 +84,7 @@
                 const element = document.getElementById(user.id)
 
                 usersElement.removeChild(element)
-            })
-
-
-            Echo.channel('chat').listen('TestMessageSent', (e) => {
-                console.log(e)
+            }).listen('MessageSent', (e) => {
                 const element = document.createElement('li')
                 element.innerText = e.user.name + ': ' + e.message
 
@@ -87,7 +95,6 @@
     <script type="module">
         const messageElement = document.getElementById('message')
         const sendElement = document.getElementById('send')
-        const messagesElement = document.getElementById('messages')
 
         sendElement.addEventListener('click', (e) => {
             e.preventDefault();
@@ -98,5 +105,25 @@
 
             messageElement.value = ''
         })
+    </script>
+
+    <script>
+        function greetUser(id) {
+            window.axios.post('chat/greet/' + id)
+        }
+    </script>
+
+    <script type="module">
+
+        const messagesElement = document.getElementById('messages')
+        Echo.private('chat.greet.{{ auth()->user()->id }}')
+            .listen('GreetingSent', (e) => {
+                console.log(e)
+                const element = document.createElement('li')
+                element.innerText = e.message
+                element.classList.add('text-success')
+
+                messagesElement.appendChild(element)
+            })
     </script>
 @endpush

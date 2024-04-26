@@ -11,24 +11,24 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
-class TestMessageSent implements ShouldBroadcast
+class MessageSent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $user;
     public $message;
-    
+
     public function __construct($user, $message)
     {
         $this->user = $user;
         $this->message = $message;
     }
-    
+
     public function broadcastOn(): array
     {
-        Log::debug("{$this->user->name}: {$this->message}");
+        // if the user is not participating in the 'present channel' then the user will not receive the message
         return [
-            new Channel('chat'),
+            new PresenceChannel('chat'),
         ];
     }
 
